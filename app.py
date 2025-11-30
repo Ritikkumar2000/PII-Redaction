@@ -264,9 +264,13 @@ with st.container():
             try:
                 with st.spinner("🔍 Extracting text and detecting PII..."):
                     status_code, extracted_text, ocr_text_pages = extract_text_from_pdf(st.session_state.input_path)
-                    if status_code == 0:
-                        st.error("❌ Failed to extract text. The PDF may be corrupted or OCR may have failed.")
-                        reset_state()
+                    # if status_code == 0:
+                    #     st.error("❌ Failed to extract text. The PDF may be corrupted or OCR may have failed.")
+                    #     reset_state()
+                    #     st.stop()
+                    if status_code == 0 and not text:
+                        st.error("This PDF looks scanned and requires OCR, which is disabled on the deployed app. "
+                                "Try a digital PDF or run the project locally for full OCR support.")
                         st.stop()
 
                 if extracted_text.strip():

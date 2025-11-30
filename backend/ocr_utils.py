@@ -13,9 +13,15 @@ logger = logging.getLogger(__name__)
 
 # Set Tesseract path
 TESSERACT_PATH = os.environ.get("TESSERACT_PATH", r"C:\Program Files\Tesseract-OCR\tesseract.exe")
-if not os.path.exists(TESSERACT_PATH):
-    logger.error(f"Tesseract not found at {TESSERACT_PATH}.")
-    raise FileNotFoundError(f"Tesseract not found at {TESSERACT_PATH}")
+TESSERACT_AVAILABLE = True
+# if not os.path.exists(TESSERACT_PATH):
+#     logger.error(f"Tesseract not found at {TESSERACT_PATH}.")
+#     raise FileNotFoundError(f"Tesseract not found at {TESSERACT_PATH}")
+if os.path.exists(TESSERACT_PATH):
+    pytesseract.pytesseract.tesseractcmd = TESSERACT_PATH
+else:
+    logger.warning(f"Tesseract not found at {TESSERACT_PATH}. OCR will be disabled on this environment.")
+    TESSERACT_AVAILABLE = False
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 def preprocess_image(image, use_fallback=False):
@@ -57,6 +63,9 @@ def extract_text_from_scanned_pdf(pdf_path, dpi=300):
     """
     Extracts text from scanned PDF using OCR with image preprocessing.
     """
+    if not TESSERACT_AVAILABLE:
+        logger.error("OCR requested but Tesseract is not available in this environment.")
+        return 0, "", []   # or raise a RuntimeError with a clear message
     if not os.path.isfile(pdf_path):
         logger.error(f"The file '{pdf_path}' does not exist.")
         return 0, "", []
